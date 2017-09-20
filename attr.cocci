@@ -7,7 +7,8 @@ import re
 dec_name = {}
 # golbal dict to collect attribute names
 attr_name = {}
-dir = "/home/haneen/git/kernels/staging"
+dir1 = "/home/haneen/git/kernels/staging"
+dir2 = "/home/haneen/git/kernels/staging/drivers/staging"
 
 # grep lines with "What:" pattern and get var name at end of line
 def grep_attrib(fname, attr_name):
@@ -29,50 +30,33 @@ def collect_attrib(dir, attr_name):
 			file_name = os.path.join(root, fname)
 			grep_attrib(file_name, attr_name)
 
-# find "Documentation" folders and apply recursive grepping on "What:" pattern
-for root, subdirs, files in os.walk(dir):
-	if ("Documentation" in subdirs):
-		dir_name = os.path.join(root, "Documentation")
-		#print dir_name
-		collect_attrib(dir_name, attr_name)
+collect_attrib(dir1, attr_name)
+collect_attrib(dir2, attr_name)
 
-
-print len(attr_name)
+print "Total attrib names found: ", len(attr_name)
 			
 @r@
 declarer d;
 identifier x;
-position p;
+expression list[n] parm;
 @@
 
-d@p(x, ...);
+d(parm,x, ...);
 
 @script:python@
 x << r.x;
 d << r.d;
-p << r.p;
+n << r.n;
 @@
 
 if (x in attr_name):
-	if (d in dec_name):
-		dec_name[d].append(x)
-	else:
-		dec_name[d] = [x]
+	dec_name[d] = n
 else:
 	cocci.include_match(False)
 
 
-@r2@
-declarer r.d;
-identifier r.x;
-position r.p;
-@@
-
-*d@p(x, ...);
-
 @finalize:python@
 @@
-
 
 print "DECLARER NAMES LIST:"
 for k, v in dec_name.items():
